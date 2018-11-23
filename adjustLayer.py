@@ -42,7 +42,7 @@ def prepare_data(data, lags=1):
 lags = 1
 X_train, y_train = prepare_data(train, lags)
 X_test, y_test = prepare_data(test, lags)
-y_true = y_test     # due to naming convention
+y_true = y_test
 
 class MyWindow(QWidget):
     def __init__(self):
@@ -51,7 +51,7 @@ class MyWindow(QWidget):
 
     def setupUI(self):
         self.setGeometry(600, 200, 1200, 600)
-        self.setWindowTitle("Mustafa BOLEKEN")
+        self.setWindowTitle("Hidden Layer Number Adjuster")
 
         self.lineEdit_0 = QLineEdit()
         self.lineEdit_1 = QLineEdit()
@@ -112,12 +112,12 @@ class MyWindow(QWidget):
 
         trainScores = [];
 
-        mdl1 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        mdl1 = []
 
         for i in range(0,(y-x+1)):
 
             print("Testing with #",i+x)
-            mdl1[i] = self.neurelNetwork(i+x)
+            mdl1.append(self.neurelNetwork(i+x))
             mdl1[i].fit(X_train, y_train, epochs=200, batch_size=2, verbose=0)
 
             train_score = mdl1[i].evaluate(X_train, y_train, verbose=0)
