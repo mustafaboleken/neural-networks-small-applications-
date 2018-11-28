@@ -5,3 +5,9 @@
 It will test some numbers of hidden layes and finds the best one.
  
  <img src="Screenshots/adjustLayer.png" width="480">
+
+-> multiStepPrediction.py
+
+It will produce predictions for n-step forward.
+ 
+ <img src="Screenshots/multiStepPrediction.png" width="480">
