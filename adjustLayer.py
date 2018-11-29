@@ -63,11 +63,15 @@ class MyWindow(QWidget):
         self.pushButton = QPushButton("Calculate")
         self.pushButton.clicked.connect(self.calculateButton)
 
+        self.progress = QProgressBar(self)
+        self.progress.setMaximum(100)
+
         self.fig = plt.Figure()
         self.canvas = FigureCanvas(self.fig)
 
         leftLayout = QVBoxLayout()
         leftLayout.addWidget(self.canvas)
+        leftLayout.addWidget(self.progress)
 
         rightLayout = QVBoxLayout()
         rightLayout.addWidget(self.label_0)
@@ -88,8 +92,17 @@ class MyWindow(QWidget):
         self.label_1.setText("From")
         self.label_2.setText("to")
         self.label_3.setText("\n")
+        self.progress.setValue(0)
 
         self.setLayout(layout)
+
+    def onButtonClick(self):
+        self.calc = External()
+        self.calc.countChanged.connect(self.onCountChanged)
+        self.calc.start()
+
+    def onCountChanged(self, value):
+        self.progress.setValue(value)
 
     def neurelNetwork(self, numLayer=1):
         mdl0=Sequential()
@@ -99,6 +112,7 @@ class MyWindow(QWidget):
         return mdl0
 
     def calculateButton(self):
+        self.progress.setValue(0)
         x = str(self.lineEdit_0.text())
         y = str(self.lineEdit_1.text())
 
@@ -127,6 +141,7 @@ class MyWindow(QWidget):
                 trainScores.append(train_score)
             print(train_score)
             print("\n")
+            self.progress.setValue((100/(y-x+1))*(i+1)-10)
 
         bestLayerNumber = trainScores.index(max(trainScores))+x
         self.label_3.setText("\nBest layer number is %d\nIt's train score is %.2f"%(bestLayerNumber, max(trainScores)))
@@ -137,6 +152,8 @@ class MyWindow(QWidget):
         # generate predictions for training
         train_predict = mdl.predict(X_train)
         test_predict = mdl.predict(X_test)
+
+        self.progress.setValue(100)
 
         # shift train predictions for plotting
         train_predict_plot = np.empty_like(data)
