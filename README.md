@@ -4,7 +4,7 @@
 
 It will test some numbers of hidden layes and finds the best one.
  
- <img src="Screenshots/adjustLayer.png" width="480">
+ <img src="Screenshots/adjustLayer1.png" width="480">
 
 -> multiStepPrediction.py
 
