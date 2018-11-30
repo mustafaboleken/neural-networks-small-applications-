@@ -22,12 +22,17 @@ np.random.seed(7)
 df = pd.read_csv('./passengers.csv', sep=';', parse_dates=True, index_col=0)
 data = df.values
 
-# using keras often requires the data type float32
+# float32 data type for keras
 data = data.astype('float32')
 
 # slice the data
 train = data[0:120, :]   # length 120
 test = data[120:, :]     # length 24
+
+# train2 & test2 for split the train to two parts
+# for finding best number of hidden layer
+train2 = data[0:96, :]   # length 96
+test2 = data[96:120, :]     # length 24
 
 def prepare_data(data, lags=1):
     #Create lagged data from an input time series
@@ -38,11 +43,17 @@ def prepare_data(data, lags=1):
         y.append(data[row + lags, 0])
     return np.array(X), np.array(y)
 
-# prepare the data
 lags = 1
+
+# prepare the data
 X_train, y_train = prepare_data(train, lags)
 X_test, y_test = prepare_data(test, lags)
 y_true = y_test
+
+#prepare the data for test on train part
+X_train2, y_train2 = prepare_data(train2, lags)
+X_test2, y_test2 = prepare_data(test2, lags)
+y_true2 = y_test2
 
 class MyWindow(QWidget):
     def __init__(self):
@@ -112,7 +123,13 @@ class MyWindow(QWidget):
         return mdl0
 
     def calculateButton(self):
+<<<<<<< HEAD
+        global X_train, y_train, X_test, y_test, y_true, X_split, y_split
+        global X_train2, y_train2, X_test2, y_test2, y_true2, X_split2, y_split2
+
+=======
         self.progress.setValue(0)
+>>>>>>> 7a63af2dc9e1d256acbadd5f76c01824e2835a49
         x = str(self.lineEdit_0.text())
         y = str(self.lineEdit_1.text())
 
@@ -124,7 +141,7 @@ class MyWindow(QWidget):
             x = 1
             y = 3
 
-        trainScores = [];
+        rmseScores = [];
 
         mdl1 = []
 
@@ -132,19 +149,16 @@ class MyWindow(QWidget):
 
             print("Testing with #",i+x)
             mdl1.append(self.neurelNetwork(i+x))
-            mdl1[i].fit(X_train, y_train, epochs=200, batch_size=2, verbose=0)
-
-            train_score = mdl1[i].evaluate(X_train, y_train, verbose=0)
-            if(train_score > 2500):
-                trainScores.append(0)
-            else:
-                trainScores.append(train_score)
-            print(train_score)
+            mdl1[i].fit(X_train2, y_train2, epochs=200, batch_size=2, verbose=0)
+            test_predict = mdl1[i].predict(X_test2)
+            mse = ((y_test2.reshape(-1, 1) - test_predict.reshape(-1, 1)) ** 2).mean()
+            rmseScores.append(math.sqrt(mse))
+            print("Mean Squared Error: {}".format(mse))
             print("\n")
             self.progress.setValue((100/(y-x+1))*(i+1)-10)
 
-        bestLayerNumber = trainScores.index(max(trainScores))+x
-        self.label_3.setText("\nBest layer number is %d\nIt's train score is %.2f"%(bestLayerNumber, max(trainScores)))
+        bestLayerNumber = rmseScores.index(max(rmseScores))+x
+        self.label_3.setText("\nBest layer number is %d\nIt's RMSE score is %.2f"%(bestLayerNumber, min(rmseScores)))
 
         mdl = self.neurelNetwork(bestLayerNumber)
         mdl.fit(X_train, y_train, epochs=200, batch_size=2, verbose=0)
