@@ -3,11 +3,8 @@
 
 import sys
 import math
-from time import sleep
 import numpy as np
 import pandas as pd
-import pandas_datareader.data as web
-from pandas import Series, DataFrame
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import Qt, QTimer
@@ -29,47 +26,49 @@ data = data.astype('float32')
 lags = 1
 dataParserFlag = 0
 
-X_split=0
-y_split=0
+X_split = 0
+y_split = 0
 
-class Features():
-    def neurelNetwork(self, numLayer=4, inputDim=1, outputDim=1):
-        print("\n*** Creating a new model with #{} hidden layers. ***\n".format(numLayer))
-        mdl0=Sequential()
-        mdl0.add(Dense(numLayer, input_dim=inputDim, activation='relu'))
-        mdl0.add(Dense(outputDim))
+
+class Features:
+    def neurel_network(self, num_layer=4, input_dim=1, output_dim=1):
+        print("\n*** Creating a new model with #{} hidden layers. ***\n".format(num_layer))
+        mdl0 = Sequential()
+        mdl0.add(Dense(num_layer, input_dim=input_dim, activation='relu'))
+        mdl0.add(Dense(output_dim))
         mdl0.compile(loss='mean_squared_error', optimizer='adam')
         return mdl0
 
-    def dataParser(self, trainRatio=85, n_steps_in=4, n_steps_out=3):
-        print("Parsing data with the percent of {}".format(trainRatio))
-        window.x = int((144/100)*trainRatio);
+    def data_parser(self, train_ratio=85, n_steps_in=4, n_steps_out=3):
+        print("Parsing data with the percent of {}".format(train_ratio))
+        window.x = int((144/100)*train_ratio)
         train = data[0:window.x, :]
-        test = data[window.x:, :]
 
         global X_split, y_split
-        X_split, y_split = self.splitSequence(train, n_steps_in, n_steps_out)
+        X_split, y_split = self.split_sequence(train, n_steps_in, n_steps_out)
 
-    def splitSequence(self, data, n_steps_in=4, n_steps_out=3):
-    	X, y = list(), list()
-    	for i in range(len(data)):
-    		end_ix = i + n_steps_in
-    		out_end_ix = end_ix + n_steps_out
-    		if out_end_ix > len(data):
-    			break
-    		seq_x, seq_y = data[i:end_ix, 0], data[end_ix:out_end_ix, 0]
-    		X.append(seq_x)
-    		y.append(seq_y)
-    	return np.array(X), np.array(y)
+    def split_sequence(self, data, n_steps_in=4, n_steps_out=3):
+        X, y = list(), list()
+        for i in range(len(data)):
+            end_ix = i + n_steps_in
+            out_end_ix = end_ix + n_steps_out
+            if out_end_ix > len(data):
+                break
+            seq_x, seq_y = data[i:end_ix, 0], data[end_ix:out_end_ix, 0]
+            X.append(seq_x)
+            y.append(seq_y)
+        return np.array(X), np.array(y)
 
-feat = Features()
+
+feature = Features()
+
 
 class MyWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setupUI()
+        self.setup_ui()
 
-    def setupUI(self):
+    def setup_ui(self):
         self.setGeometry(600, 200, 1200, 600)
         self.setWindowTitle("Time Series Forecasting with MLP Tool")
 
@@ -84,11 +83,11 @@ class MyWindow(QWidget):
         self.slider.setSingleStep(1)
 
         self.pushButton = QPushButton("Predict")
-        self.pushButton.clicked.connect(self.predictButton)
+        self.pushButton.clicked.connect(self.predict_button)
 
         self.x = 0
         self.ratio = 85
-        self.layerNumber = 120
+        self.layerNumber = 32
         self.fig = plt.Figure()
         self.canvas = FigureCanvas(self.fig)
 
@@ -110,28 +109,29 @@ class MyWindow(QWidget):
 
         self.setLayout(layout)
 
-    def predictButton(self):
-        global data, X_train, y_train, X_test, y_test, X_split, y_split
+    def predict_button(self):
+        global data, X_split, y_split
 
-        nStep = str(self.lineEdit.text())
-        X_input = np.array([], dtype='float32')
+        n_step = str(self.lineEdit.text())
+        x_input = np.array([], dtype='float32')
         prediction_expected = np.array([], dtype='float32')
 
         try:
-            nStep = int(nStep)
+            n_step = int(n_step)
 
         except ValueError:
-            nStep = 3
+            n_step = 3
 
-        feat.dataParser(self.ratio, nStep+1, nStep)
+        feature.data_parser(self.ratio, n_step+1, n_step)
 
-        mdl = feat.neurelNetwork(self.layerNumber, nStep+1, nStep)
+        # make multi-step prediction with multiple output
+        mdl = feature.neurel_network(self.layerNumber, n_step+1, n_step)
         mdl.fit(X_split, y_split, epochs=200, batch_size=2, verbose=0)
 
-        X_input = np.append(X_input, data[window.x-(nStep+1):window.x, 0])
-        prediction_expected = np.append(prediction_expected, data[window.x:window.x+nStep, 0])
-        X_input = X_input.reshape((1, nStep+1))
-        prediction_result = mdl.predict(X_input)
+        x_input = np.append(x_input, data[window.x-(n_step+1):window.x, 0])
+        prediction_expected = np.append(prediction_expected, data[window.x:window.x+n_step, 0])
+        x_input = x_input.reshape((1, n_step+1))
+        prediction_result = mdl.predict(x_input)
 
         # plot baseline and predictions
         ax = self.fig.add_subplot(111)
@@ -144,6 +144,7 @@ class MyWindow(QWidget):
         ax.grid()
 
         self.canvas.draw()
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
