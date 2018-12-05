@@ -2,12 +2,12 @@
 
 -> adjustLayer.py
 
-It will test some numbers of hidden layes and finds the best one for prediction.
- 
- <img src="Screenshots/adjustLayer1.png" width="480">
+It will test some numbers of hidden layes and finds the best one.
 
--> multiStepPrediction.py
+ <img src="Screenshots/adjustLayer.png" width="480">
 
-It will produce predictions for n-step forward.
- 
- <img src="Screenshots/multiStepPrediction.png" width="480">
+-> multiStepForecasting.py
+
+It will forecasting n-step forward.
+
+ <img src="Screenshots/multiStepForecasting.png" width="480">
