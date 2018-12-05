@@ -2,7 +2,7 @@
 
 -> adjustLayer.py
 
-It will test some numbers of hidden layes and finds the best one.
+It will test some numbers of hidden layes and finds the best one for prediction.
  
  <img src="Screenshots/adjustLayer1.png" width="480">
 
